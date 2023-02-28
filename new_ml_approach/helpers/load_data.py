@@ -2,6 +2,7 @@
 import numpy as np
 import json, os, sys, random
 import scipy as sp
+import pandas as pd
 
 cur_path=os.getcwd()
 sys.path.append(cur_path)
@@ -29,7 +30,8 @@ def load_sig_tensor(json_filenames, epoch_size, epoch_step, sample_rate, input_s
 
     for fname in json_filenames:
         
-        subject_id = fname.strip('.json').split('\\')
+        subject_id = fname.strip('.json').split('\\')[-1]
+        # print('Processing ', subject_id)
         
         # Open json file
         with open(fname) as json_file:
@@ -90,18 +92,19 @@ def load_sig_tensor(json_filenames, epoch_size, epoch_step, sample_rate, input_s
             sig_tensor[sig].append(epoch_sig)
             subject_name[sig].append([subject_id]*epoch_sig.shape[1])
 
-        # if target_signal.lower() == 'position':
+
         data[target_signal]=data[target_signal][0:int(minL*data['fs'][target_signal])]
         target_epoch_length=int(epoch_size*data['fs'][target_signal])
+        
         if (len(data[target_signal])%(target_epoch_length))>0:
             data[target_signal] = data[target_signal][0:-(len(data[target_signal])%(target_epoch_length))]
         
         target=[]
         
-        for i in np.arange(0,len(data[target_signal]),target_epoch_length):
+        for i in np.arange(0,len(data[target_signal]),int(epoch_step*data['fs'][target_signal])):
             
             if ytype == 'Cat':
-                target.append(sp.stats.mode(data[target_signal][i:i+target_epoch_length])[0])
+                target.append(sp.stats.mode(data[target_signal][i:i+target_epoch_length],keepdims=False)[0])
             else:
                 target.append(np.mean(data[target_signal][i:i+target_epoch_length]))
 
@@ -115,21 +118,39 @@ def load_sig_tensor(json_filenames, epoch_size, epoch_step, sample_rate, input_s
     subject_name = np.concatenate(subject_name[list(subject_name.keys())[0]])
     target_tensor = np.concatenate(target_tensor)
 
+    if target_signal.lower() == 'position':
+        target_tensor=np.where(target_tensor==0,1,0)
+
     
     return sig_tensor, target_tensor, subject_name
 
 
 
 
-def split(X,y,train_subs,val_subs,test_subs,subject_names):
+def split(X,y,subject_names,train_size=0.8,val_size=0.1,test_size=0.1):
 
     '''
     Data split function. Works like train test split except data is separated by subject
     '''
 
+    subject_ids=list(set(subject_names))
+    random.Random(6).shuffle(subject_ids)
+
+    train_subs=subject_ids[0:int(len(subject_ids)*train_size)]
+    val_subs=subject_ids[int(len(subject_ids)*train_size):(int(len(subject_ids)*train_size)+int(len(subject_ids)*val_size))]
+    test_subs=subject_ids[(int(len(subject_ids)*train_size)+int(len(subject_ids)*val_size)):]
+
+    print('-'*30)
+    print('Train-test-validation split')
+    print('-'*30)
+
+    print('Training Set Size = ', len(train_subs), ' subjects')
+    print('Validation Set Size = ', len(val_subs), ' subjects')
+    print('Test Set Size = ', len(test_subs), ' subjects')
+
     X_train = X[:,np.where(np.isin(subject_names,train_subs))[0],:]
     X_train = np.transpose(X_train, (1,2,0))
-    y_train = y[np.where(np.isin(subject_names,train_subs))[0]]
+    y_train = y[np.where(np.isin(subject_names,train_subs))[0]].reshape(-1)
         
     # Shuffle the data (helps with batch grad descent)
     idx=np.arange(X_train.shape[0])
@@ -140,11 +161,19 @@ def split(X,y,train_subs,val_subs,test_subs,subject_names):
     X_val=X[:,np.where(np.isin(subject_names,val_subs))[0],:]
     X_val = np.transpose(X_val, (1,2,0))
 
-    y_val = y[np.where(np.isin(subject_names,val_subs))[0]]
+    y_val = y[np.where(np.isin(subject_names,val_subs))[0]].reshape(-1)
 
     X_test=X[:,np.where(np.isin(subject_names,test_subs))[0],:]
     X_test = np.transpose(X_test, (1,2,0))
-    y_test = y[np.where(np.isin(subject_names,test_subs))[0]]
+    y_test = y[np.where(np.isin(subject_names,test_subs))[0]].reshape(-1)
+
+    print('-'*30)
+    print('train set size = ', X_train.shape, '\n Target distribution \n',pd.Series(y_train).value_counts(normalize=True))
+    print('-'*30)
+    print('val set size = ', X_val.shape, '\n Target distribution \n',pd.Series(y_val).value_counts(normalize=True))
+    print('-'*30)
+    print('test set size = ', X_test.shape, '\n Target distribution \n',pd.Series(y_test).value_counts(normalize=True))
+    print('-'*30)
 
 
     return X_train, y_train, X_val, y_val, X_test, y_test
