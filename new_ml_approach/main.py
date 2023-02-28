@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 cur_path=os.getcwd()
 sys.path.append(cur_path)
 
-from load_data import *
-from plotting import plot_oct
+from helpers.load_data import *
+from helpers.plotting import plot_oct
 
 if __name__ == '__main__':
 

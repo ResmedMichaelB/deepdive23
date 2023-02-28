@@ -41,3 +41,56 @@ def build_cnn_1D(n_timesteps, n_features,filters=16,kernel_size=128,n_dense=32,d
         model.add(Dense(1,activation='linear',use_bias=False))
 
     return model
+
+
+def build_2head_cnn(n_timesteps,n_features,filters=16,kernel_size=128,n_dense=32,dropout=0.5,ytype='Cat'):
+
+    '''
+    Multiheaded 1D CNN model with each branch having 2 CNN layers and a flattening layer.
+    Dropout included for regularisation
+    Flattened layers are merged into dense layers
+    '''
+
+
+    # Head 1 - 1D CNN model. Layer 1
+    visible1=Input(shape=(n_timesteps,n_features))
+    cnn1=Conv1D(filters=filters, kernel_size=kernel_size)(visible1)
+    cnn1=BatchNormalization()(cnn1)
+    cnn1=ReLU()(cnn1)
+    cnn1=Dropout(dropout)(cnn1)
+    cnn1=MaxPooling1D(pool_size=2)(cnn1)
+    # Layer 2
+    cnn1=Conv1D(filters=filters*2, kernel_size=kernel_size)(cnn1)
+    cnn1=BatchNormalization()(cnn1)
+    cnn1=ReLU()(cnn1)
+    cnn1=Dropout(dropout)(cnn1)
+    cnn1=MaxPooling1D(pool_size=2)(cnn1)
+    cnn1=Flatten()(cnn1)
+    
+    # Head 2 - 1D CNN model. Layer 1
+    visible2=Input(shape=(n_timesteps,n_features))
+    cnn2=Conv1D(filters=filters, kernel_size=kernel_size)(visible2)
+    cnn2=BatchNormalization()(cnn2)
+    cnn2=ReLU()(cnn2)
+    cnn2=Dropout(dropout)(cnn2)
+    cnn2=MaxPooling1D(pool_size=2)(cnn2)
+    # Layer 2
+    cnn2=Conv1D(filters=filters*2, kernel_size=kernel_size)(cnn2)
+    cnn2=BatchNormalization()(cnn2)
+    cnn2=ReLU()(cnn2)
+    cnn2=Dropout(dropout)(cnn2)
+    cnn2=MaxPooling1D(pool_size=2)(cnn2)
+    cnn2=Flatten()(cnn2)
+
+    # Merge and dense layer
+    merged=Concatenate(axis=1)([cnn1,cnn2])
+    dense_layer = Dense(n_dense,activation='relu')(merged)
+
+    if ytype=='Cat':
+        output = Dense(1,activation='sigmoid')(dense_layer)
+    else:
+        output = Dense(1,activation='linear')(dense_layer)
+
+    model = Model(inputs=[visible1,visible2],outputs=output)
+
+    return model

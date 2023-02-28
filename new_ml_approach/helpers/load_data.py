@@ -7,8 +7,11 @@ import pandas as pd
 cur_path=os.getcwd()
 sys.path.append(cur_path)
 
-from transforms import get_octave, list2numpy, reformat_fs
-from config import *
+parent_path=os.path.abspath(os.path.join(cur_path,'..'))
+sys.path.append(parent_path)
+
+from helpers.transforms import get_octave, list2numpy, reformat_fs
+from helpers.config import *
 
 
 def load_sig_tensor(json_filenames, epoch_size, epoch_step, sample_rate, input_signals, target_signal ,ytype = 'Cat', dataset = 's9'):
