@@ -58,6 +58,8 @@ def load_sig_tensor(json_filenames, epoch_size, epoch_step, sample_rate, input_s
             data['fs']['Position'] = data['fs']['Angle']
         elif dataset == 'fillius':
             data['position'] = np.array(list(map(fillius_map,data['position'])))
+            data['psg_hyp'] = np.array(list(map(sleep_stage_map,data['psg_hyp'])))
+            data['fs']['position'] = 16
 
 
         # Find shortest signal and truncate data
@@ -123,6 +125,9 @@ def load_sig_tensor(json_filenames, epoch_size, epoch_step, sample_rate, input_s
 
     if target_signal.lower() == 'position':
         target_tensor=np.where(target_tensor==0,1,0)
+    
+    # if target_signal.lower() == 'psg_hyp':
+    #     target_tensor=np.where(target_tensor==1,1,0)
 
     
     return sig_tensor, target_tensor, subject_name
@@ -137,7 +142,7 @@ def split(X,y,subject_names,train_size=0.8,val_size=0.1,test_size=0.1):
     '''
 
     subject_ids=list(set(subject_names))
-    random.Random(6).shuffle(subject_ids)
+    random.Random(20).shuffle(subject_ids)
 
     train_subs=subject_ids[0:int(len(subject_ids)*train_size)]
     val_subs=subject_ids[int(len(subject_ids)*train_size):(int(len(subject_ids)*train_size)+int(len(subject_ids)*val_size))]
@@ -171,11 +176,11 @@ def split(X,y,subject_names,train_size=0.8,val_size=0.1,test_size=0.1):
     y_test = y[np.where(np.isin(subject_names,test_subs))[0]].reshape(-1)
 
     print('-'*30)
-    print('train set size = ', X_train.shape, '\n Target distribution \n',pd.Series(y_train).value_counts(normalize=True))
+    print('train set size = ', X_train.shape, '\n Target distribution \n',pd.DataFrame(pd.Series(y_train).value_counts(normalize=True)))
     print('-'*30)
-    print('val set size = ', X_val.shape, '\n Target distribution \n',pd.Series(y_val).value_counts(normalize=True))
+    print('val set size = ', X_val.shape, '\n Target distribution \n',pd.DataFrame(pd.Series(y_val).value_counts(normalize=True)))
     print('-'*30)
-    print('test set size = ', X_test.shape, '\n Target distribution \n',pd.Series(y_test).value_counts(normalize=True))
+    print('test set size = ', X_test.shape, '\n Target distribution \n',pd.DataFrame(pd.Series(y_test).value_counts(normalize=True)))
     print('-'*30)
 
 

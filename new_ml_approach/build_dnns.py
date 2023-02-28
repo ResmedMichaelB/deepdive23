@@ -60,7 +60,7 @@ def build_2head_cnn(n_timesteps,n_features,filters=16,kernel_size=128,n_dense=32
     cnn1=Dropout(dropout)(cnn1)
     cnn1=MaxPooling1D(pool_size=2)(cnn1)
     # Layer 2
-    cnn1=Conv1D(filters=filters*2, kernel_size=kernel_size)(cnn1)
+    cnn1=Conv1D(filters=filters, kernel_size=kernel_size)(cnn1)
     cnn1=BatchNormalization()(cnn1)
     cnn1=ReLU()(cnn1)
     cnn1=Dropout(dropout)(cnn1)
@@ -75,7 +75,7 @@ def build_2head_cnn(n_timesteps,n_features,filters=16,kernel_size=128,n_dense=32
     cnn2=Dropout(dropout)(cnn2)
     cnn2=MaxPooling1D(pool_size=2)(cnn2)
     # Layer 2
-    cnn2=Conv1D(filters=filters*2, kernel_size=kernel_size)(cnn2)
+    cnn2=Conv1D(filters=filters, kernel_size=kernel_size)(cnn2)
     cnn2=BatchNormalization()(cnn2)
     cnn2=ReLU()(cnn2)
     cnn2=Dropout(dropout)(cnn2)

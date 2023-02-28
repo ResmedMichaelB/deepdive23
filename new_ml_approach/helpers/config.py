@@ -21,3 +21,34 @@ def fillius_map(x):
         return 2
     
     return 4
+
+
+def sleep_stage_str_map(x):
+
+    if x==0:
+        return 'REM'
+    elif x==1:
+        return 'Wake'
+    elif x==-1:
+        return 'Light'
+    elif x==-2:
+        return 'Light'
+    elif x==-3:
+        return 'Deep'
+    elif x==-4:
+        return 'Deep'
+
+def sleep_stage_map(x):
+
+    if x==0:
+        return 0 # REM
+    elif x==1:
+        return 1 # Wake
+    elif x==-1:
+        return -1 # Light
+    elif x==-2:
+        return -1 # Light
+    elif x==-3:
+        return -3 # Deep
+    elif x==-4:
+        return -3 # Deep
