@@ -46,6 +46,7 @@ def get_octave(sig,fs,levels,preQuantiles=[]):
         split=split/2
         levels=levels-1
         i=i+1
+        sig=low
     
     if len(preQuantiles)==0:
         quantiles.append(np.quantile(low,0.95))

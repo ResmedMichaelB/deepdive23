@@ -12,13 +12,13 @@ def position_map(x):
 def fillius_map(x):
     # position_map={0:'left',1:'supine',2:'prone',3:'right'}
     if x==0:
-        return 1
+        return 1 # 'left'
     elif x==1:
-        return 0
+        return 0 # supine
     elif x==2:
-        return 3
+        return 3 # prone
     elif x==3:
-        return 2
+        return 2 # right
     
     return 4
 

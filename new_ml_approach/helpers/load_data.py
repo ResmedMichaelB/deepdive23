@@ -3,6 +3,8 @@ import numpy as np
 import json, os, sys, random
 import scipy as sp
 import pandas as pd
+from scipy.signal import welch
+import matplotlib.pyplot as plt
 
 cur_path=os.getcwd()
 sys.path.append(cur_path)
@@ -13,8 +15,12 @@ sys.path.append(parent_path)
 from helpers.transforms import get_octave, list2numpy, reformat_fs
 from helpers.config import *
 
+def check_spectrum(sig):
+    plt.figure()
+    f,Pxx=welch(sig,25)
+    plt.plot(f,np.log(Pxx))
 
-def load_sig_tensor(json_filenames, epoch_size, epoch_step, sample_rate, input_signals, target_signal ,ytype = 'Cat', dataset = 's9'):
+def load_sig_tensor(json_filenames, epoch_size, epoch_step, sample_rate, input_signals, target_signal, levels=7 ,ytype = 'Cat', dataset = 's9'):
     
     '''
     Function that loads data from json files. Resamples signals to match the set sample rate
@@ -57,9 +63,11 @@ def load_sig_tensor(json_filenames, epoch_size, epoch_step, sample_rate, input_s
             data['Position'] = np.array(list(map(position_map,data['Angle'])))
             data['fs']['Position'] = data['fs']['Angle']
         elif dataset == 'fillius':
-            data['position'] = np.array(list(map(fillius_map,data['position'])))
+            data['Position'] = np.array(list(map(fillius_map,data['Position'])))
             data['psg_hyp'] = np.array(list(map(sleep_stage_map,data['psg_hyp'])))
-            data['fs']['position'] = 16
+            data['fs']['Position'] = 16
+            data['fs']['Flow'] = 25
+            data['fs']['Mask Pres'] = 25
 
 
         # Find shortest signal and truncate data
@@ -74,7 +82,7 @@ def load_sig_tensor(json_filenames, epoch_size, epoch_step, sample_rate, input_s
                 sp.signal.resample(data[sig],len(data[sig])/data['fs'][sig])
             
             # Octave encoding, transform 1d signal into multiple frequnecy bands
-            all_sigs,_ = get_octave(sig = data[sig],fs = data['fs'][sig],levels = 7)
+            all_sigs,_ = get_octave(sig = data[sig],fs = data['fs'][sig],levels = levels)
             
 
             # all_sigs is a 2d matrix (Octave channels x time points)
@@ -142,7 +150,7 @@ def split(X,y,subject_names,train_size=0.8,val_size=0.1,test_size=0.1):
     '''
 
     subject_ids=list(set(subject_names))
-    random.Random(20).shuffle(subject_ids)
+    random.Random(6).shuffle(subject_ids)
 
     train_subs=subject_ids[0:int(len(subject_ids)*train_size)]
     val_subs=subject_ids[int(len(subject_ids)*train_size):(int(len(subject_ids)*train_size)+int(len(subject_ids)*val_size))]
@@ -184,4 +192,4 @@ def split(X,y,subject_names,train_size=0.8,val_size=0.1,test_size=0.1):
     print('-'*30)
 
 
-    return X_train, y_train, X_val, y_val, X_test, y_test
+    return X_train, y_train, X_val, y_val, X_test, y_test, [train_subs, val_subs, test_subs]
