@@ -54,14 +54,14 @@ def build_cnn_1D_5layer(n_timesteps, n_features,filters=4,kernel_size=5,n_dense=
     model = Sequential()
 
     # Layer 1
-    model.add(Conv1D(filters=filters, kernel_size=kernel_size, input_shape=(n_timesteps,n_features)))
+    model.add(Conv1D(filters=filters, kernel_size=kernel_size, strides=kernel_size, input_shape=(n_timesteps,n_features)))
     model.add(BatchNormalization())
     model.add(ReLU())
     model.add(Dropout(dropout))
-    model.add(MaxPooling1D(pool_size=2))
+    # model.add(MaxPooling1D(pool_size=2))
 
     # Layer 2. 
-    model.add(Conv1D(filters=filters, kernel_size=kernel_size))
+    model.add(Conv1D(filters=filters, strides=kernel_size//2, kernel_size=kernel_size))
     model.add(BatchNormalization())
     model.add(ReLU())
     model.add(Dropout(dropout))
