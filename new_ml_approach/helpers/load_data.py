@@ -12,8 +12,9 @@ sys.path.append(cur_path)
 parent_path=os.path.abspath(os.path.join(cur_path,'..'))
 sys.path.append(parent_path)
 
-from helpers.transforms import get_octave, list2numpy, reformat_fs
+from helpers.transforms import get_octave, list2numpy, reformat_fs, filterLP, filterHP
 from helpers.config import *
+from helpers.plotting import plot_spectrum
 
 def check_spectrum(sig):
     plt.figure()
@@ -56,6 +57,13 @@ def load_sig_tensor(json_filenames, epoch_size, epoch_step, sample_rate, input_s
         if 'metadata' in data:
             data = reformat_fs(data)
 
+        if dataset == 'pacific':
+            data['Flow']=filterLP(data['flow'],25,3,2)
+            data['Mask Pres']=filterHP(data['mask_pressure'],25,0.1,2)
+            data['Mask Pres']=filterLP(data['mask_pressure'],25,3,2)
+            data['fs']['Flow']=25
+            data['fs']['Mask Pres']=25
+
         data = list2numpy(data)
 
         # Label position consistently
@@ -68,6 +76,8 @@ def load_sig_tensor(json_filenames, epoch_size, epoch_step, sample_rate, input_s
             data['fs']['Position'] = 16
             data['fs']['Flow'] = 25
             data['fs']['Mask Pres'] = 25
+            data['fs']['Mask Pres'] = 25
+            data['fs']['Leak'] = 0.5
 
 
         # Find shortest signal and truncate data
@@ -183,13 +193,13 @@ def split(X,y,subject_names,train_size=0.8,val_size=0.1,test_size=0.1):
     X_test = np.transpose(X_test, (1,2,0))
     y_test = y[np.where(np.isin(subject_names,test_subs))[0]].reshape(-1)
 
-    print('-'*30)
-    print('train set size = ', X_train.shape, '\n Target distribution \n',pd.DataFrame(pd.Series(y_train).value_counts(normalize=True)))
-    print('-'*30)
-    print('val set size = ', X_val.shape, '\n Target distribution \n',pd.DataFrame(pd.Series(y_val).value_counts(normalize=True)))
-    print('-'*30)
-    print('test set size = ', X_test.shape, '\n Target distribution \n',pd.DataFrame(pd.Series(y_test).value_counts(normalize=True)))
-    print('-'*30)
+    # print('-'*30)
+    # print('train set size = ', X_train.shape, '\n Target distribution \n',pd.DataFrame(pd.Series(y_train).value_counts(normalize=True)))
+    # print('-'*30)
+    # print('val set size = ', X_val.shape, '\n Target distribution \n',pd.DataFrame(pd.Series(y_val).value_counts(normalize=True)))
+    # print('-'*30)
+    # print('test set size = ', X_test.shape, '\n Target distribution \n',pd.DataFrame(pd.Series(y_test).value_counts(normalize=True)))
+    # print('-'*30)
 
 
     return X_train, y_train, X_val, y_val, X_test, y_test, [train_subs, val_subs, test_subs]

@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import *
+from scipy.signal import welch
 
 def plot_oct(sig,title_=''):
     
@@ -16,6 +17,10 @@ def plot_oct(sig,title_=''):
     plt.yticks(ticks,range(sig.shape[0]))
     plt.title(title_)
 
+def plot_spectrum(sig):
+
+    f,y=welch(sig)
+    plt.plot(f,np.log(y**2))
 
 
 def train_val_curve(train):

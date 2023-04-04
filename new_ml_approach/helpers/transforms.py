@@ -26,6 +26,14 @@ def filterLP(y,fs,lp_cutoff,filt_order):
                         fs=fs)
     return signal.filtfilt(b,a,y,axis=0)
 
+def filterHP(y,fs,hp_cutoff,filt_order):
+    b,a= signal.butter(filt_order,
+                        hp_cutoff,
+                        btype='high',
+                        analog=False,
+                        fs=fs)
+    return signal.filtfilt(b,a,y,axis=0)
+
 
 def get_octave(sig,fs,levels,preQuantiles=[]):
 
